@@ -4,6 +4,8 @@
 # и Make https://www.gnu.org/software/make/
 ## Подготовка окружения
 
+Скопируйте файл `./src/.env.example` в `./src/.env`
+
 Скопируйте файл `.env.example` в `.env` и добавьте в него следующие строки:
 <strong> <br>
 MYSQL_DATABASE=tasker<br>
