@@ -1,0 +1,4 @@
+.env
+./src/vendor
+./src/bootstrap/cache/
+.idea/
