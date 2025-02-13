@@ -2,3 +2,5 @@
 ./src/vendor
 ./src/bootstrap/cache/
 .idea/
+/src/_ide_helper.php
+/src/.phpstorm.meta.php
