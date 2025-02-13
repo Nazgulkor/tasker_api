@@ -1,14 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\User\TaskController;
 use App\Http\Controllers\User\UserController;
 use Illuminate\Support\Facades\Route;
 
-
-
-Route::group(['middleware' => 'auth:sanctum'], function () {
+Route::group(['middleware' => 'auth:sanctum'], static function () {
     Route::get('/user', [UserController::class, 'show']);
     Route::put('/user', [UserController::class, 'update']);
     Route::get('/users', [UserController::class, 'users'])->middleware(['can:view all users']);

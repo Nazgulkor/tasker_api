@@ -13,16 +13,15 @@ use Illuminate\Support\Facades\Auth;
 class UserController extends Controller
 {
     public function __construct(
-        private UserService $userService
-    ){}
+        private readonly UserService $userService
+    ) {
+    }
 
     public function show(Request $request): JsonResponse
     {
         $user = $this->userService->getAuthUser($request);
 
-        return response()->json([
-            'data' => new UserResource($user)
-        ], 200);
+        return response()->json(['data' => new UserResource($user)]);
     }
 
     public function users(): JsonResponse
@@ -31,7 +30,7 @@ class UserController extends Controller
 
         return response()->json([
             'data' => UserResource::collection($users)
-        ], 200);
+        ]);
     }
 
     public function update(UserRequest $request): JsonResponse
@@ -60,6 +59,6 @@ class UserController extends Controller
 
         $this->userService->deleteUser($id);
 
-        return response()->json(['message' => 'Пользователь успешно удален.'], 200);
+        return response()->json(['message' => 'Пользователь успешно удален.']);
     }
 }

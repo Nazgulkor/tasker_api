@@ -1,17 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Auth;
 
 use App\Models\User;
 use App\Repositories\Auth\LoginRepository;
 use App\Repositories\User\UserRepository;
 
-class LoginService
+final readonly class LoginService
 {
     public function __construct(
         private UserRepository $userRepository,
         private LoginRepository $loginRepository,
-    ) {}
+    ) {
+    }
 
     public function login(array $credentials): ?string
     {

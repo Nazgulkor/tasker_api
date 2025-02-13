@@ -1,15 +1,15 @@
 <?php
 
-namespace Tests\Unit\Services\User;
+declare(strict_types=1);
+
+namespace Tests\Unit;
 
 use App\Models\Task;
-use App\Models\User;
-use App\Services\User\TaskService;
 use App\Repositories\User\TaskRepository;
+use App\Services\User\TaskService;
+use Illuminate\Database\Eloquent\Collection;
 use Mockery;
 use PHPUnit\Framework\TestCase;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Database\Eloquent\Collection;
 
 class TaskServiceTest extends TestCase
 {
