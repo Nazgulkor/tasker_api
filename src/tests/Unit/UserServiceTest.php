@@ -1,17 +1,17 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Tests\Unit;
+namespace Tests\Unit\Services\User;
 
 use App\Models\User;
 use App\Repositories\User\UserRepository;
 use App\Services\User\UserService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Mockery;
 use PHPUnit\Framework\TestCase;
+use Illuminate\Support\Facades\Hash;
 
 class UserServiceTest extends TestCase
 {

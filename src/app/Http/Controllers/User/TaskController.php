@@ -15,8 +15,7 @@ class TaskController extends Controller
 {
     public function __construct(
         private TaskService $taskService,
-    ) {
-    }
+    ) { }
 
     /**
      * @throws Exception
