@@ -1,11 +1,18 @@
 # tasker_api
-## Требования к окружению
-1. Установлен [docker](https://www.docker.com/) и [docker-compose](https://docs.docker.com/compose/install/)
-2. Установлен [Make](https://www.gnu.org/software/make/)
+# Установка нужных вещей
+# Установите на машину docker https://www.docker.com/
+# и Make https://www.gnu.org/software/make/
+## Подготовка окружения
 
-## Установка приложения
-1. Создание конфигов:
-`cp .env.example .env && cp src/.env.example src/.env`
+Скопируйте файл `./src/.env.example` в `./src/.env`
 
-2. Установка приложения:
-`make install`
+Скопируйте файл `.env.example` в `.env` и добавьте в него следующие строки:
+<strong> <br>
+MYSQL_DATABASE=tasker<br>
+MYSQL_USER=root<br>
+MYSQL_ROOT_PASSWORD=root<br>
+MYSQL_PASSWORD=root<br>
+</strong>
+
+#  И пропишите в консоли команду <i>Make install</i>
+

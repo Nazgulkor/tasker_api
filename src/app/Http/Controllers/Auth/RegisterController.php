@@ -12,8 +12,7 @@ class RegisterController extends Controller
 {
     public function __construct(
         protected RegisterService $registerService
-    ) {
-    }
+    ){}
 
     /**
      * @throws \Exception
