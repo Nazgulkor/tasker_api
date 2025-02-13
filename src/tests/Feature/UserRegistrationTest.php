@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Feature;
 
 use App\Models\User;
@@ -10,13 +12,15 @@ use Tests\TestCase;
 
 class UserRegistrationTest extends TestCase
 {
+    use RefreshDatabase;
     /**
      * Проверка успешной регистрации пользователя
      *
      * @return void
      */
-    public function test_user_can_register()
+    public function test_user_can_register(): void
     {
+        $this->refreshDatabase();
         Artisan::call('create-roles');
 
         $data = [
@@ -47,8 +51,9 @@ class UserRegistrationTest extends TestCase
      *
      * @return void
      */
-    public function test_registration_fails_with_invalid_data()
+    public function test_registration_fails_with_invalid_data(): void
     {
+        $this->refreshDatabase();
         $data = [
             'name' => '',
             'email' => 'invalid-email',

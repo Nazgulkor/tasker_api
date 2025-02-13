@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Auth;
 
 use App\Models\User;
-use App\Repositories\Auth\RegisterRepository;
 use App\Repositories\User\UserRepository;
 use Exception;
 
