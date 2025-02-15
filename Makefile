@@ -16,10 +16,13 @@ migrate-db:
 	docker exec -it tasker_app php artisan migrate
 migrate-test-db:
 	docker exec -it tasker_app php artisan migrate --database=mysql_test
-migrate: migrate-db migrate-test-db
+migrate-db-fresh:
+	docker exec -it tasker_app php artisan migrate:fresh --seed
+migrate-test-db-fresh:
+	docker exec -it tasker_app php artisan migrate:fresh --seed
+migrate: migrate-db-fresh migrate-test-db-fresh
 	@echo "Накатываю миграции..."
 install: up composer-install create-test-db migrate
-	docker exec -it tasker_app php artisan create-roles
 	docker exec -it tasker_app php artisan key:generate
 app:
 	docker exec -it tasker_app bash

@@ -4,30 +4,54 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\LoginRequest;
-use App\Services\Auth\LoginService;
+use App\Http\ApiSpec;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Responses\FailResponse;
+use App\Http\Responses\SuccessResponse;
+use App\Models\User;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Hash;
+use OpenApi\Attributes as OA;
 
-class LoginController extends Controller
+#[OA\Tag(name: 'Auth', description: 'Авторизация')]
+final class LoginController
 {
-    public function __construct(
-        private LoginService $loginService,
-    ) {
-    }
-
+    #[OA\Get(
+        path: '/api/user/login',
+        summary: 'Login user',
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                ref: LoginRequest::class
+            )
+        ),
+        tags: ['Auth'],
+        responses: [
+            new ApiSpec\SuccessResponse(properties: [
+                new OA\Property(
+                    property: 'token',
+                    type: 'string',
+                ),
+            ]),
+            new ApiSpec\NotFoundResponse(),
+            new ApiSpec\BadRequestResponse()
+        ],
+    )]
     public function login(LoginRequest $request): JsonResponse
     {
-        $data = $request->validated();
-        $token = $this->loginService->login($data);
-
-        if (!$token) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
+        try {
+            $user = User::whereEmail($request->email)->firstOrFail();
+        } catch (ModelNotFoundException $e) {
+            return new FailResponse('Пользователь не найден', 404);
         }
 
-        return response()->json([
-            'message' => 'Login successful',
-            'token' => $token,
-        ]);
+        if (!Hash::check($request->password, $user->password)) {
+            return new FailResponse('Неверные учетные данные', 400);
+        }
+
+        $token = $user->createToken(name: config('app.name'), expiresAt: now()->addWeek());
+
+        return new SuccessResponse(['token' => $token->plainTextToken]);
     }
 }

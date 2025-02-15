@@ -1,64 +1,157 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\User;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\User\UserRequest;
+use App\Http\ApiSpec;
+use App\Http\Requests\User\UpdateUserRequest;
 use App\Http\Resources\User\UserResource;
-use App\Services\User\UserService;
+use App\Http\Responses\FailResponse;
+use App\Http\Responses\SuccessResponse;
+use App\Models\User;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use OpenApi\Attributes as OA;
 
-class UserController extends Controller
+#[OA\Tag(name: 'Users', description: 'Пользователи')]
+class UserController
 {
-    public function __construct(
-        private readonly UserService $userService
-    ) {
+    #[OA\Get(
+        path: '/api/users',
+        summary: 'Получение списка пользователей',
+        security: [
+            ['bearerAuth' => []]
+        ],
+        tags: ['Users'],
+        responses: [
+            new ApiSpec\SuccessResponse(
+                properties: [
+                    new OA\Property(
+                        property: 'users',
+                        type: 'array',
+                        items: new OA\Items(
+                            ref: UserResource::class
+                        )
+                    ),
+                ],
+            ),
+            new ApiSpec\ForbiddenResponse(),
+            new ApiSpec\UnauthorizedResponse(),
+        ]
+    )]
+    public function index(): JsonResponse
+    {
+        return new SuccessResponse(['users' => UserResource::collection(User::all())]);
     }
 
-    public function show(Request $request): JsonResponse
+    #[OA\Get(
+        path: '/api/users/show',
+        summary: 'Получение информации о пользователе',
+        security: [
+            ['bearerAuth' => []]
+        ],
+        tags: ['Users'],
+        parameters: [
+            new OA\Parameter(
+                name: 'id',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(
+                    type: 'integer'
+                )
+            ),
+        ],
+        responses: [
+            new ApiSpec\SuccessResponse(
+                properties: [
+                    new OA\Property(
+                        property: 'user',
+                        ref: UserResource::class
+                    ),
+                ],
+            ),
+            new ApiSpec\NotFoundResponse(),
+            new ApiSpec\UnauthorizedResponse(),
+        ]
+    )]
+    public function show(): JsonResponse
     {
-        $user = $this->userService->getAuthUser($request);
-
-        return response()->json(['data' => new UserResource($user)]);
+        return new SuccessResponse(['user' => new UserResource(Auth::user())]);
     }
 
-    public function users(): JsonResponse
+    #[OA\Put(
+        path: '/api/users/update',
+        summary: 'Обновление информации о пользователе',
+        security: [
+            ['bearerAuth' => []]
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                ref: UpdateUserRequest::class
+            )
+        ),
+        tags: ['Users'],
+        responses: [
+            new ApiSpec\SuccessResponse(
+                properties: [
+                    new OA\Property(
+                        property: 'user',
+                        ref: UserResource::class
+                    ),
+                ],
+            ),
+            new ApiSpec\NotFoundResponse(),
+            new ApiSpec\UnauthorizedResponse(),
+        ]
+    )]
+    public function update(UpdateUserRequest $request): JsonResponse
     {
-        $users = $this->userService->getAllUsers();
+        $user = User::whereId(Auth::id())->first();
+        $user->update($request->toArray());
+        $user->refresh();
 
-        return response()->json([
-            'data' => UserResource::collection($users)
-        ]);
+        return new SuccessResponse(['user' => new UserResource($user)]);
     }
 
-    public function update(UserRequest $request): JsonResponse
+    #[OA\Delete(
+        path: '/api/users/{id}',
+        summary: 'Удаление пользователя',
+        security: [
+            ['bearerAuth' => []]
+        ],
+        tags: ['Users'],
+        parameters: [
+            new OA\Parameter(
+                name: 'id',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(
+                    type: 'integer'
+                )
+            ),
+        ],
+        responses: [
+            new ApiSpec\SuccessResponse(),
+            new ApiSpec\NotFoundResponse(),
+            new ApiSpec\ForbiddenResponse(),
+        ]
+    )]
+    public function destroy(int $id): JsonResponse
     {
-        $userId = Auth::id();
-
-        if (!$userId) {
-            return response()->json(['message' => 'Unauthenticated.'], 401);
+        if (Auth::id() === $id) {
+            return new FailResponse('Вы не можете удалите собственного пользователя', 403);
+        }
+        try {
+            $user = User::whereId($id)->firstOrFail();
+        } catch (ModelNotFoundException) {
+            return new FailResponse('Пользователь не найден', 404);
         }
 
-        $updatedUser = $this->userService->updateUser($userId, $request->validated());
+        $user->delete();
 
-        return response()->json([
-            'message' => 'Profile updated successfully',
-            'user' => new UserResource($updatedUser)
-        ]);
-    }
-
-    public function delete(int $id): JsonResponse
-    {
-        $authUserId = Auth::id();
-
-        if ($authUserId === $id) {
-            return response()->json(['message' => 'Администратор не может удалить себя.'], 403);
-        }
-
-        $this->userService->deleteUser($id);
-
-        return response()->json(['message' => 'Пользователь успешно удален.']);
+        return new SuccessResponse();
     }
 }

@@ -6,7 +6,6 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
@@ -21,13 +20,12 @@ class UserRegistrationTest extends TestCase
     public function test_user_can_register(): void
     {
         $this->refreshDatabase();
-        Artisan::call('create-roles');
+        $this->seed();
 
         $data = [
             'name' => 'John Doe',
             'email' => 'john.doe@example.com',
             'password' => 'password123',
-            'role' => 'user',
             'password_confirmation' => 'password123'
         ];
 

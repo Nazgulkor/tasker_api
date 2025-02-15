@@ -1,33 +1,51 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\RegisterRequest;
+use App\Http\ApiSpec;
+use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Resources\User\UserResource;
-use App\Services\Auth\RegisterService;
+use App\Http\Responses\SuccessResponse;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Hash;
+use OpenApi\Attributes as OA;
 
-class RegisterController extends Controller
+final class RegisterController
 {
-    public function __construct(
-        protected RegisterService $registerService
-    ) {
-    }
-
-    /**
-     * @throws \Exception
-     */
+    #[OA\Post(
+        path: '/api/user/register',
+        summary: 'Регистрация пользователя',
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                ref: RegisterRequest::class
+            )
+        ),
+        tags: ['Auth'],
+        responses: [
+            new ApiSpec\SuccessResponse(
+                properties: [
+                    new OA\Property(
+                        property: 'user',
+                        ref: UserResource::class
+                    ),
+                ],
+            ),
+            new ApiSpec\BadRequestResponse(),
+        ]
+    )]
     public function register(RegisterRequest $request): JsonResponse
     {
-        $data = $request->validated();
+        $user = User::factory()->create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+        ]);
+        $request->is_admin ? $user->assignRole('admin') : $user->assignRole('user');
 
-        $user = $this->registerService->register($data);
-        $user->assignRole($data['role']);
-
-        return response()->json([
-            'message' => 'User registered successfully',
-            'user' => new UserResource($user)
-        ], 201);
+        return new SuccessResponse(['user' => new UserResource($user)]);
     }
 }
